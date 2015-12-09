@@ -1,0 +1,11 @@
+registry:
+  image: registry:2
+  restart: always
+  ports:
+    - "0.0.0.0:443:5000"
+    # For registry debug server
+    #- "0.0.0.0:5001:5001"
+  volumes:
+    - "./certs:/certs:ro"
+    - "./registry/conf:/etc/docker/registry:ro"
+    - "./registry/storage:/var/lib/registry:rw"

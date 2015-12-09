@@ -1,0 +1,68 @@
+# See https://github.com/docker/distribution/blob/master/docs/configuration.md
+version: 0.1
+http:
+  addr: :5000
+  net: tcp
+  prefix: /
+  tls:
+    certificate: /certs/registry.crt
+    key: /certs/registry.key
+  debug:
+    addr: :5001
+  secret: asecretforlocaldevelopment
+  headers:
+    X-Content-Type-Options: [nosniff]
+storage:
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: /var/lib/registry
+  maintenance:
+    uploadpurging:
+      enabled: true
+      age: 168h
+      interval: 60m
+      dryrun: false
+auth:
+  htpasswd:
+    realm: docker-registry-realm
+    path: /etc/docker/registry/htpasswd
+log:
+  level: info
+  formatter: text
+  fields:
+    service: registry
+    environment: production
+  hooks:
+    - type: mail
+      disabled: false
+      levels:
+        - error
+      options:
+        smtp:
+          addr: your.mail.host:25
+          insecure: true
+        from: no-reply@your-docker-registry.com
+        to:
+          - sombody@in-your-company.com
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
+  http:
+    - uri: https://0.0.0.0:5000/v2/
+      headers:
+        # Make sure you have the user "healthchecker" in the /etc/docker/registry/htpasswd
+        # file and update this basic auth string using this command:
+        #
+        #   echo "Basic $(echo -n "healthchecker:healthchecker" | base64)"
+        #
+        # Note that /etc/docker/registry/htpasswd is mounted into the docker container.
+        Authorization: [Basic aGVhbHRoY2hlY2tlcjpoZWFsdGhjaGVja2Vy]
+      statuscode: 200
+      timeout: 3s
+      interval: 10s
+      threshold: 3
+
+
